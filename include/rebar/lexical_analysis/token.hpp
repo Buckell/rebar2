@@ -16,10 +16,11 @@ namespace rebar {
     enum class token_type {
         null    = 0,
 
-        integer = 1, ///< Represents a stored rebar::integer.
-        number  = 2, ///< Represents a stored rebar::number.
-        string  = 3, ///< Represents a stored rebar::string.
-        symbol  = 4, ///< Represents a stored rebar::symbol.
+        identifier = 1, ///< Represents a stored rebar::string.
+        integer    = 2, ///< Represents a stored rebar::integer.
+        number     = 3, ///< Represents a stored rebar::number.
+        string     = 4, ///< Represents a stored rebar::string.
+        symbol     = 5, ///< Represents a stored rebar::symbol.
     };
 
     /// Internal token data type (variant).
@@ -67,9 +68,11 @@ namespace rebar {
          * Construct a token with the provided data.
          * @tparam t_data The type of the data to store.
          * @param a_data  The data of the token to store.
+         * @param a_type  The type of the data to store (automatically
+         *                assumed from data type, but can be overriden.)
          */
         template <token_data_type t_data>
-        explicit token(t_data const & a_data) noexcept requires(!std::is_same_v<t_data, uint64_t>);
+        explicit token(t_data const & a_data, token_type a_type = token_data_type_v<t_data>) noexcept requires(!std::is_same_v<t_data, uint64_t>);
 
         /**
          * Construct an integer token.
@@ -103,6 +106,9 @@ namespace rebar {
          */
         [[nodiscard]]
         inline bool is_type(token_type a_type) const noexcept;
+
+        [[nodiscard]]
+        inline bool is_identifier() const noexcept;
 
         [[nodiscard]]
         inline bool is_integer() const noexcept;
@@ -141,8 +147,8 @@ namespace rebar {
     // ###################################### INLINE DEFINITIONS ######################################
 
     template <token_data_type t_data>
-    token::token(t_data const & a_data) noexcept requires(!std::is_same_v<t_data, uint64_t>) :
-        m_type(token_data_type_v<t_data>),
+    token::token(t_data const & a_data, token_type const a_type) noexcept requires(!std::is_same_v<t_data, uint64_t>) :
+        m_type(a_type),
         m_data(a_data)
     {}
 
@@ -167,6 +173,7 @@ namespace rebar {
             case token_type::number:
                 return get_number() == a_token.get_number();
             case token_type::string:
+            case token_type::identifier:
                 return get_string() == a_token.get_string();
             case token_type::symbol:
                 return get_symbol() == a_token.get_symbol();
@@ -177,6 +184,10 @@ namespace rebar {
 
     bool token::is_type(token_type const a_type) const noexcept {
         return m_type == a_type;
+    }
+
+    bool token::is_identifier() const noexcept {
+        return is_type(token_type::identifier);
     }
 
     bool token::is_integer() const noexcept {
