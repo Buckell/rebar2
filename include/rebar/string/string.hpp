@@ -46,6 +46,7 @@ namespace rebar {
          */
         inline string & operator = (string &&) noexcept;
 
+        [[nodiscard]]
         inline bool operator == (string const & a_string) const noexcept;
     };
 
