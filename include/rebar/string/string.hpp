@@ -16,27 +16,27 @@ namespace rebar {
         string_reference m_container;
 
     public:
-        string(string_engine& a_engine, string_reference a_container) noexcept;
+        inline string(string_engine& a_engine, string_reference a_container) noexcept;
 
-        ~string() noexcept;
+        inline ~string() noexcept;
 
         /**
          * Constructs a copy of the provided string. Creates a new reference.
          */
-        string(string const &) noexcept;
+        inline string(string const &) noexcept;
 
         /**
          * Moves the provided string. Does not create a new reference.
          * @note The provided string will be invalid once the move is complete.
          *       Using this string will result in undefined behavior.
          */
-        string(string &&) noexcept;
+        inline string(string &&) noexcept;
 
         /**
          * Assigns a copy of the provided string. Creates a new reference.
          * @return The assigned string.
          */
-        string & operator = (string const &) noexcept;
+        inline string & operator = (string const &) noexcept;
 
         /**
          * Moves the provided string. Does not create a new reference.
@@ -44,8 +44,60 @@ namespace rebar {
          * @note The provided string will be invalid once the move is complete.
          *       Using this string will result in undefined behavior.
          */
-        string & operator = (string &&) noexcept;
+        inline string & operator = (string &&) noexcept;
+
+        inline bool operator == (string const & a_string) const noexcept;
     };
+
+    // ###################################### INLINE DEFINITIONS ######################################
+
+    string::string(string_engine &a_engine, string_reference const a_container) noexcept : // NOLINT(*-misplaced-const)
+        m_engine(&a_engine),
+        m_container(a_container)
+    {
+        m_container->reference();
+    }
+
+    string::~string() {
+        m_container->dereference(*m_engine);
+    }
+
+    string::string(string const & m_string) noexcept :
+        string(*m_string.m_engine, m_string.m_container)
+    {}
+
+    string::string(string && m_string) noexcept :
+        m_engine(m_string.m_engine),
+        m_container(m_string.m_container)
+    {
+        m_string.m_container = nullptr;
+    }
+
+    string & string::operator = (string const & a_string) noexcept {
+        if (this == &a_string) {
+            return *this;
+        }
+
+        m_engine = a_string.m_engine;
+        m_container = a_string.m_container;
+
+        m_container->reference();
+
+        return *this;
+    }
+
+    string & string::operator = (string && a_string) noexcept {
+        m_engine = a_string.m_engine;
+        m_container = a_string.m_container;
+
+        a_string.m_container = nullptr;
+
+        return *this;
+    }
+
+    bool string::operator == (string const & a_string) const noexcept {
+        return m_container == a_string.m_container;
+    }
 
 }
 

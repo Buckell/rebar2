@@ -102,6 +102,8 @@ namespace rebar {
         void erase_string(std::string_view a_string) noexcept;
     };
 
+    // ###################################### INLINE DEFINITIONS ######################################
+
     inline void internal_string::reference() {
         ++reference_count;
 
