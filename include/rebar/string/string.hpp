@@ -5,6 +5,8 @@
 #ifndef STRING_HPP
 #define STRING_HPP
 
+#include <iostream>
+
 #include <rebar/string/string_engine.hpp>
 
 namespace rebar {
@@ -51,7 +53,15 @@ namespace rebar {
 
         [[nodiscard]]
         inline bool operator == (string const & a_string) const noexcept;
+
+        [[nodiscard]]
+        inline std::string_view view() const noexcept;
     };
+
+    // IO stream interoperability.
+    inline std::ostream & operator << (std::ostream & a_stream, string const & a_string) noexcept {
+        return a_stream << a_string.view();
+    }
 
     // ###################################### INLINE DEFINITIONS ######################################
 
@@ -111,6 +121,10 @@ namespace rebar {
 
     bool string::operator == (string const & a_string) const noexcept {
         return m_container == a_string.m_container;
+    }
+
+    std::string_view string::view() const noexcept {
+        return m_container->string;
     }
 
 }
