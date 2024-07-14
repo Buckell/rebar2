@@ -9,6 +9,8 @@
 #include <rebar/debug/logging.hpp>
 #include <rebar/environment/environment.hpp>
 #include <rebar/environment/types.hpp>
+#include <rebar/lexical_analysis/symbol.hpp>
+#include <rebar/lexical_analysis/token.hpp>
 #include <rebar/string/string.hpp>
 #include <rebar/string/string_engine.hpp>
 

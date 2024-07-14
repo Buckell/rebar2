@@ -2,12 +2,13 @@
 #include <rebar/rebar.hpp>
 
 int main() {
-    rebar::string_engine engine;
+    rebar::environment env;
 
-    auto str1 = engine.str("Hello, world!");
-    auto str2 = engine.str("Hello, world!");
+    auto str = env.str("Hello");
 
-    std::cout << (str1 == str2) << std::endl;
+    auto t = rebar::token(3232ull);
+
+    std::cout << t.get_integer() << std::endl;
 
     return 0;
 }
