@@ -16,6 +16,9 @@ namespace rebar {
         string_reference m_container;
 
     public:
+        /// Null string constructor.
+        inline string() noexcept;
+
         inline string(string_engine& a_engine, string_reference a_container) noexcept;
 
         inline ~string() noexcept;
@@ -52,7 +55,12 @@ namespace rebar {
 
     // ###################################### INLINE DEFINITIONS ######################################
 
-    string::string(string_engine &a_engine, string_reference const a_container) noexcept : // NOLINT(*-misplaced-const)
+    string::string() noexcept :
+        m_engine(nullptr),
+        m_container(nullptr)
+    {}
+
+    string::string(string_engine & a_engine, string_reference const a_container) noexcept : // NOLINT(*-misplaced-const)
         m_engine(&a_engine),
         m_container(a_container)
     {
