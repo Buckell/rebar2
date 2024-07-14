@@ -68,6 +68,11 @@ namespace rebar {
     }
 
     string::~string() {
+        // Do nothing if string is null.
+        if (m_container == nullptr) {
+            return;
+        }
+
         m_container->dereference(*m_engine);
     }
 
