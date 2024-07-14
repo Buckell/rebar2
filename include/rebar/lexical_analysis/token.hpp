@@ -8,6 +8,7 @@
 #include <variant>
 
 #include <rebar/environment/types.hpp>
+#include <rebar/string/string.hpp>
 
 namespace rebar {
 
@@ -17,12 +18,12 @@ namespace rebar {
 
         integer = 1, ///< Represents a stored rebar::integer.
         number  = 2, ///< Represents a stored rebar::number.
-        string  = 3, ///< Represents a stored std::string_view.
+        string  = 3, ///< Represents a stored rebar::string.
         symbol  = 4, ///< Represents a stored rebar::symbol.
     };
 
     /// Internal token data type (variant).
-    using token_data = std::variant<integer, number, std::string_view, symbol>;
+    using token_data = std::variant<integer, number, string, symbol>;
 
     /**
      * Test if a type is a token data type (storable in a token).
@@ -30,9 +31,9 @@ namespace rebar {
      */
     template <typename t_type>
     constexpr bool is_token_data_type_v =
-        std::is_same_v<t_type, integer>          ||
-        std::is_same_v<t_type, number>           ||
-        std::is_same_v<t_type, std::string_view> ||
+        std::is_same_v<t_type, integer> ||
+        std::is_same_v<t_type, number>  ||
+        std::is_same_v<t_type, string>  ||
         std::is_same_v<t_type, symbol>;
 
     /**
@@ -42,10 +43,10 @@ namespace rebar {
      */
     template <typename t_type>
     constexpr token_type token_data_type_v =
-        std::is_same_v<t_type, integer>          ? token_type::integer :
-        std::is_same_v<t_type, number>           ? token_type::number  :
-        std::is_same_v<t_type, std::string_view> ? token_type::string  :
-        std::is_same_v<t_type, symbol>           ? token_type::symbol  :
+        std::is_same_v<t_type, integer> ? token_type::integer :
+        std::is_same_v<t_type, number>  ? token_type::number  :
+        std::is_same_v<t_type, string>  ? token_type::string  :
+        std::is_same_v<t_type, symbol>  ? token_type::symbol  :
         token_type::null; // This value should never occur.
 
     template <typename t_type>
@@ -59,7 +60,7 @@ namespace rebar {
      */
     class token {
         token_type m_type;
-        std::variant<integer, number, std::string_view, symbol> m_data;
+        token_data m_data;
 
     public:
         /**
@@ -68,7 +69,7 @@ namespace rebar {
          * @param a_data  The data of the token to store.
          */
         template <token_data_type t_data>
-        explicit token(t_data a_data) noexcept requires(!std::is_same_v<t_data, uint64_t>);
+        explicit token(t_data const & a_data) noexcept requires(!std::is_same_v<t_data, uint64_t>);
 
         /**
          * Construct an integer token.
@@ -85,14 +86,6 @@ namespace rebar {
          */
         template <std::floating_point t_number>
         explicit token(t_number a_number) noexcept requires(!is_token_data_type_v<t_number>);
-
-        /**
-         * Construct a string token.
-         * @tparam t_string The type of the provided string.
-         * @param a_string The value of the string to store.
-         */
-        template <std::convertible_to<std::string_view> t_string>
-        explicit token(t_string const & a_string) noexcept requires(!is_token_data_type_v<t_string>);
 
         token(token const &) noexcept = default;
         token(token &&)      noexcept = default;
@@ -139,7 +132,7 @@ namespace rebar {
         inline number get_number() const noexcept;
 
         [[nodiscard]]
-        inline std::string_view get_string() const noexcept;
+        inline string get_string() const noexcept;
 
         [[nodiscard]]
         inline symbol get_symbol() const noexcept;
@@ -148,7 +141,7 @@ namespace rebar {
     // ###################################### INLINE DEFINITIONS ######################################
 
     template <token_data_type t_data>
-    token::token(t_data const a_data) noexcept requires(!std::is_same_v<t_data, uint64_t>) :
+    token::token(t_data const & a_data) noexcept requires(!std::is_same_v<t_data, uint64_t>) :
         m_type(token_data_type_v<t_data>),
         m_data(a_data)
     {}
@@ -161,11 +154,6 @@ namespace rebar {
     template <std::floating_point t_number>
     token::token(t_number const a_number) noexcept requires (!is_token_data_type_v<t_number>) :
         token(static_cast<number>(a_number))
-    {}
-
-    template <std::convertible_to<std::string_view> t_string>
-    token::token(t_string const & a_string) noexcept requires (!is_token_data_type_v<t_string>) :
-        token(static_cast<std::string_view>(a_string))
     {}
 
     bool token::operator == (token const & a_token) const noexcept {
@@ -220,8 +208,8 @@ namespace rebar {
         return get<number>();
     }
 
-    std::string_view token::get_string() const noexcept {
-        return get<std::string_view>();
+    string token::get_string() const noexcept {
+        return get<string>();
     }
 
     symbol token::get_symbol() const noexcept {
