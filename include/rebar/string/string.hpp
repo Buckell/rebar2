@@ -14,7 +14,7 @@ namespace rebar {
     class string_engine;
 
     class string {
-        string_engine* m_engine;
+        string_engine*   m_engine;
         string_reference m_container;
 
     public:
