@@ -20,6 +20,11 @@ namespace rebar {
         {
             std::copy_n(a_string, size, value);
         }
+
+        [[nodiscard]]
+        std::string_view view() const noexcept {
+            return std::string_view(value);
+        }
     };
 
 }
