@@ -8,7 +8,11 @@
 #include <unordered_map>
 
 namespace rebar {
-
+    /**
+     * An enumeration representing all of the special characters and other
+     * symbols that can be present within a piece of plaintext code, including
+     * keywords and other reserved sequences.
+     */
     enum class symbol {
         tilda, // ~
         exclamation, // !
@@ -50,8 +54,13 @@ namespace rebar {
         double_pipe_equals, // ||=
     };
 
+    /// A map of plaintext symbols to enumeration values.
     using symbol_map = std::unordered_map<std::string_view, symbol>;
 
+    /**
+     * Generate the default Rebar symbol map.
+     * @return The default Rebar symbol map.
+     */
     inline symbol_map default_symbol_map() {
         return {
             { "~",   symbol::tilda,                   },
