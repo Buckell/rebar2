@@ -32,19 +32,23 @@ namespace rebar {
          */
 
         // Simple Type, Simply Comparable:
-        null    = 0, ///< Null type: No contained data.
-        boolean = 1, ///< Boolean type: Binary true/false value.
-        integer = 2, ///< Integer type: Signed integer.
-        number  = 3, ///< Number type: Floating point value.
+        null    =  0, ///< Null type: No contained data.
+        boolean =  1, ///< Boolean type: Binary true/false value.
+        integer =  2, ///< Integer type: Signed integer.
+        number  =  3, ///< Number type: Floating point value.
 
         // Complex Type, Simply Comparable:
-        string  = 4, ///< String type: Represents a string of characters.
+        string  =  4, ///< String type: Represents a string of characters.
+        function = 5, ///< Function type: Represents a callable function.
 
         // Complex Type, Complexly Comparable:
-        table   = 5, /**< Table type: Represents a key/value map of objects to
-                      *               objects.
-                      */
-        array   = 6, ///< Array type: Represents an array of objects.
+        table   =  5, /**< Table type: Represents a key/value map of objects to
+                       *   objects.
+                       */
+        array   =  6, ///< Array type: Represents an array of objects.
+        native  =  7, /**< Native object type: Represents a natively-defined
+                       *   object.
+                       */
     };
 
     /**
