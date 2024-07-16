@@ -8,6 +8,8 @@
 #include <utility>
 #include <cstdint>
 
+#include <rebar/util/static_string.hpp>
+
 namespace rebar {
 
     /**
@@ -33,23 +35,25 @@ namespace rebar {
     /**
      * Generates an escape sequence handler that returns a static string. Used
      * for simple escape sequences (like converting (\") to just (") ).
-     * @tparam v_replacement_length Length of replacement string.
-     * @param replacement_string String to replace escape sequence.
-     * @return Generated escape sequence handler.
      */
-    template <std::size_t v_replacement_length>
-    consteval escape_sequence_handler simple_replacement(const char (&replacement_string)[v_replacement_length]) {
-        return [replacement_string](std::string_view) noexcept -> std::pair<std::string_view, std::size_t> {
-            return { std::string_view(replacement_string, v_replacement_length), 1 };
-        };
-    }
+    template <static_string v_replacement>
+    struct simple_replacement {
+        static std::pair<std::string_view, std::size_t> value(std::string_view) {
+            return { v_replacement.view(), 1 };
+        }
+    };
+
+    template <static_string v_replacement>
+    constexpr auto simple_replacement_v = simple_replacement<v_replacement>::value;
 
     inline escape_sequence_map default_escape_sequence_map() {
         return {
-            { '"',  simple_replacement("\"") },
-            { '\\', simple_replacement("\\") },
-            { 'n',  simple_replacement("\n") },
-            { 't',  simple_replacement("\t") },
+            // Ignore errors on following lines if present.
+            // (CLion doesn't appreciate template weirdness.)
+            { '"',  simple_replacement_v<"\""> },
+            { '\\', simple_replacement_v<"\\"> },
+            { 'n',  simple_replacement_v<"\n"> },
+            { 't',  simple_replacement_v<"\t"> },
         };
     }
 
