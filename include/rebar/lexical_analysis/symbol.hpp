@@ -6,6 +6,7 @@
 #define SYMBOL_HPP
 
 #include <unordered_map>
+#include <string_view>
 
 namespace rebar {
     /**
