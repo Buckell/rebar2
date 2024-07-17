@@ -10,6 +10,8 @@
 #include <rebar/environment/environment.hpp>
 #include <rebar/environment/types.hpp>
 #include <rebar/lexical_analysis/escape_sequence.hpp>
+#include <rebar/lexical_analysis/lexical_analyzer.hpp>
+#include <rebar/lexical_analysis/lexical_unit.hpp>
 #include <rebar/lexical_analysis/symbol.hpp>
 #include <rebar/lexical_analysis/token.hpp>
 #include <rebar/string/string.hpp>
