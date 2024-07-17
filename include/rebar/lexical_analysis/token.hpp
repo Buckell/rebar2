@@ -143,6 +143,9 @@ namespace rebar {
 
         [[nodiscard]]
         inline symbol get_symbol() const noexcept;
+
+        [[nodiscard]]
+        std::string to_string() const noexcept;
     };
 
     // ###################################### INLINE DEFINITIONS ######################################
