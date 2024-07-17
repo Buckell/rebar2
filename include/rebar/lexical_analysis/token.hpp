@@ -100,6 +100,9 @@ namespace rebar {
         [[nodiscard]]
         inline bool operator == (token const & a_token) const noexcept;
 
+        [[nodiscard]]
+        inline token_type type() const noexcept;
+
         /**
          * Determines if the token is of the type specified.
          * @param a_type The type against which to test the token.
@@ -184,6 +187,10 @@ namespace rebar {
             default:
                 return false;
         }
+    }
+
+    token_type token::type() const noexcept {
+        return m_type;
     }
 
     bool token::is_type(token_type const a_type) const noexcept {
