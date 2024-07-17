@@ -8,6 +8,7 @@
 #include <variant>
 
 #include <rebar/environment/types.hpp>
+#include <rebar/lexical_analysis/symbol.hpp>
 #include <rebar/string/string.hpp>
 
 namespace rebar {
@@ -129,7 +130,7 @@ namespace rebar {
          */
         template <token_data_type t_data>
         [[nodiscard]]
-        t_data get() const noexcept;
+        t_data const & get() const noexcept;
 
         [[nodiscard]]
         inline integer get_integer() const noexcept;
@@ -138,7 +139,7 @@ namespace rebar {
         inline number get_number() const noexcept;
 
         [[nodiscard]]
-        inline string get_string() const noexcept;
+        inline string const & get_string() const noexcept;
 
         [[nodiscard]]
         inline symbol get_symbol() const noexcept;
@@ -207,7 +208,7 @@ namespace rebar {
     }
 
     template <token_data_type t_data>
-    t_data token::get() const noexcept {
+    t_data const & token::get() const noexcept {
         return std::get<t_data>(m_data);
     }
 
@@ -219,7 +220,7 @@ namespace rebar {
         return get<number>();
     }
 
-    string token::get_string() const noexcept {
+    string const & token::get_string() const noexcept {
         return get<string>();
     }
 
