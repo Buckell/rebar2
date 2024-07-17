@@ -241,6 +241,8 @@ namespace rebar {
 
                 // Set new string part beginning iterator.
                 string_part_begin = string_it;
+
+                continue;
             }
 
             ++string_it;
