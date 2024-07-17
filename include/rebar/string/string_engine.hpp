@@ -5,8 +5,12 @@
 #ifndef STRING_ENGINE_HPP
 #define STRING_ENGINE_HPP
 
+#include <string>
+#include <cstdint>
 #include <memory>
 #include <unordered_map>
+
+#include <fmt/format.h>
 
 #include <rebar/debug/flags.hpp>
 #include <rebar/debug/logging.hpp>
