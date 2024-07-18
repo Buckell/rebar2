@@ -36,6 +36,7 @@ namespace rebar {
         // Main analysis loop.
         while (plaintext_it != plaintext.cend()) {
             unsigned char const current_char = *plaintext_it;
+            unsigned char const next_char = *(plaintext_it + 1);
 
             // Skip spaces, tabs, and other whitespace/non-display characters.
             if (current_char == ' ' || current_char == '\t' || current_char == '\n' || current_char == '\r') {
@@ -97,12 +98,16 @@ namespace rebar {
             // End string parsing.
 
             // Test for conditions of integer/number.
-            if (std::isdigit(current_char) || (current_char == '-' && std::isdigit(*(plaintext_it + 1)))) {
+            if (
+                std::isdigit(current_char) ||
+                (current_char == '-' && (std::isdigit(next_char) || next_char == '.') ||
+                (current_char == '.' && std::isdigit(next_char)))
+            ) {
                 auto const number_begin = plaintext_it;
 
                 // Store if parsed number has a decimal (number, floating
                 // point).
-                bool floating_point = false;
+                bool floating_point = current_char == '.'; // Test leading decimal.
 
                 // Store if separating apostrophes are used.
                 bool separating_characters = false;
