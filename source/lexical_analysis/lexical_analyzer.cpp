@@ -97,7 +97,7 @@ namespace rebar {
             // End string parsing.
 
             // Test for conditions of integer/number.
-            if (std::isdigit(current_char)) {
+            if (std::isdigit(current_char) || (current_char == '-' && std::isdigit(*(plaintext_it + 1)))) {
                 auto const number_begin = plaintext_it;
 
                 // Store if parsed number has a decimal (number, floating
