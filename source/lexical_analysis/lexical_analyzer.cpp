@@ -138,6 +138,8 @@ namespace rebar {
                         plaintext_position
                     );
                 }
+
+                continue;
             }
             // End integer/number parsing.
 
