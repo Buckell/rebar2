@@ -10,10 +10,6 @@
 class string_engine_test : public testing::Test {
 protected:
     rebar::string_engine m_string_engine;
-
-    string_engine_test() :
-        m_string_engine()
-    {}
 };
 
 TEST_F(string_engine_test, creation_lifetime) {
