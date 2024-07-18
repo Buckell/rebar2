@@ -5,6 +5,7 @@
 #ifndef SYMBOL_HPP
 #define SYMBOL_HPP
 
+#include <array>
 #include <unordered_map>
 #include <string_view>
 
@@ -113,6 +114,55 @@ namespace rebar {
             { "true",  { symbol::boolean_true,            true,  } },
             { "false", { symbol::boolean_false,           true,  } },
         };
+    }
+
+    constexpr std::string_view symbol_as_string(symbol const a_symbol) noexcept {
+        using namespace std::string_view_literals;
+
+        constexpr std::array symbol_strings{
+            "tilda",
+            "exclamation",
+            "exclamation_equals",
+            "at",
+            "pound",
+            "dollar",
+            "percent",
+            "carrot",
+            "carrot_equals",
+            "ampersand",
+            "ampersand_equals",
+            "double_ampersand",
+            "double_ampersand_equals",
+            "star",
+            "star_equals",
+            "parenthesis_left",
+            "paranthesis_right",
+            "bracket_left",
+            "bracket_right",
+            "brace_left",
+            "brace_right",
+            "minus",
+            "minus_equals",
+            "plus",
+            "plus_equals",
+            "equals",
+            "double_equal",
+            "slash",
+            "slash_equals",
+            "colon",
+            "semicolon",
+            "comma",
+            "carrot_left",
+            "carrot_right",
+            "pipe",
+            "pipe_equals",
+            "double_pipe",
+            "double_pipe_equals",
+            "boolean_true",
+            "boolean_false",
+        };
+
+        return symbol_strings[static_cast<size_t>(a_symbol)];
     }
 
 }
