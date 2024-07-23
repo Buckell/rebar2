@@ -14,7 +14,10 @@
 #include <rebar/lexical_analysis/lexical_unit.hpp>
 #include <rebar/lexical_analysis/symbol.hpp>
 #include <rebar/lexical_analysis/token.hpp>
+#include <rebar/semantic_analysis/operation_tree.hpp>
 #include <rebar/semantic_analysis/operators.hpp>
+#include <rebar/semantic_analysis/semantic_analyzer.hpp>
+#include <rebar/semantic_analysis/semantic_unit.hpp>
 #include <rebar/string/string.hpp>
 #include <rebar/string/string_engine.hpp>
 #include <rebar/util/static_string.hpp>
