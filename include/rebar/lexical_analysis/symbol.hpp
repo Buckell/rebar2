@@ -32,7 +32,7 @@ namespace rebar {
         star,                    // *
         star_equals,             // *=
         parenthesis_left,        // (
-        paranthesis_right,       // )
+        parenthesis_right,       // )
         bracket_left,            // [
         bracket_right,           // ]
         brace_left,              // {
@@ -89,7 +89,7 @@ namespace rebar {
             { "*",     { symbol::star,                    false, } },
             { "*=",    { symbol::star_equals,             false, } },
             { "(",     { symbol::parenthesis_left,        false, } },
-            { ")",     { symbol::paranthesis_right,       false, } },
+            { ")",     { symbol::parenthesis_right,       false, } },
             { "[",     { symbol::bracket_left,            false, } },
             { "]",     { symbol::bracket_right,           false, } },
             { "{",     { symbol::brace_left,              false, } },
