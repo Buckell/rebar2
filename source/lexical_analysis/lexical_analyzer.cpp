@@ -10,22 +10,20 @@ namespace rebar {
         std::string_view const plaintext = a_lexical_unit.plaintext();
         auto plaintext_it = plaintext.cbegin();
 
-        // Test if a value is within a range of values (inclusive).
-        auto const in_range = [](auto const value, auto const min, auto const max) {
-            return value >= min && value <= max;
-        };
-
         // Keeps incrementing the plaintext iterator until the predicate
         // function returns true. Returns final iterator.
-        auto const plaintext_increment_find = [&plaintext_it, &plaintext](auto const predicate) noexcept {
-            while (++plaintext_it != plaintext.cend()) {
-                if (predicate(*plaintext_it)) {
-                    return plaintext_it;
+        auto const plaintext_increment_find =
+            [&plaintext_it, &plaintext]<typename t_predicate>(t_predicate const predicate) noexcept
+            requires(std::predicate<t_predicate, char const>)
+            {
+                while (++plaintext_it != plaintext.cend()) {
+                    if (predicate(*plaintext_it)) {
+                        return plaintext_it;
+                    }
                 }
-            }
 
-            return plaintext.cend();
-        };
+                return plaintext.cend();
+            };
 
         // Find the index into the plaintext to which the specified iterator
         // corresponds.
