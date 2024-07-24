@@ -101,6 +101,9 @@ namespace rebar {
         bool operator == (token const & a_token) const noexcept;
 
         [[nodiscard]]
+        inline bool operator == (symbol a_symbol) const noexcept;
+
+        [[nodiscard]]
         inline token_type type() const noexcept;
 
         /**
@@ -168,6 +171,10 @@ namespace rebar {
     token::token(t_number const a_number) noexcept requires (!is_token_data_type_v<t_number>) :
         token(static_cast<number>(a_number))
     {}
+
+    bool token::operator==(symbol const a_symbol) const noexcept {
+        return is_symbol() && get_symbol() == a_symbol;
+    }
 
     token_type token::type() const noexcept {
         return m_type;
