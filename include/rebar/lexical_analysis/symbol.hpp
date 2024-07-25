@@ -38,8 +38,10 @@ namespace rebar {
         brace_left,              // {
         brace_right,             // }
         minus,                   // -
+        double_minus,            // --
         minus_equals,            // -=
         plus,                    // +
+        double_plus,             // ++
         plus_equals,             // +=
         equals,                  // =
         double_equals,           // ==
@@ -96,8 +98,10 @@ namespace rebar {
             { "{",     { symbol::brace_left,              false, } },
             { "}",     { symbol::brace_right,             false, } },
             { "-",     { symbol::minus,                   false, } },
+            { "--",    { symbol::double_minus,            false, } },
             { "-=",    { symbol::minus_equals,            false, } },
             { "+",     { symbol::plus,                    false, } },
+            { "++",    { symbol::double_plus,             false, } },
             { "+=",    { symbol::plus_equals,             false, } },
             { "=",     { symbol::equals,                  false, } },
             { "==",    { symbol::double_equals,           false, } },
@@ -144,8 +148,10 @@ namespace rebar {
             "brace_left",
             "brace_right",
             "minus",
+            "double_minus",
             "minus_equals",
             "plus",
+            "double_plus",
             "plus_equals",
             "equals",
             "double_equal",
