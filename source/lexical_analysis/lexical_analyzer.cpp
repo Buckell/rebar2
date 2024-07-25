@@ -34,7 +34,7 @@ namespace rebar {
         // Main analysis loop.
         while (plaintext_it != plaintext.cend()) {
             unsigned char const current_char = *plaintext_it;
-            unsigned char const next_char = *(plaintext_it + 1);
+            unsigned char const next_char = (plaintext_it + 1 != plaintext.cend()) ? *(plaintext_it + 1) : '\0';
 
             // Skip spaces, tabs, and other whitespace/non-display characters.
             if (current_char == ' ' || current_char == '\t' || current_char == '\n' || current_char == '\r') {
@@ -153,8 +153,15 @@ namespace rebar {
             // TODO: Optimize symbol searching with search trees.
 
             // Search for longest symbol match.
-            for (std::size_t length = 0; length < m_max_symbol_length; ++length) {
-                auto const current_end_it = plaintext_it + length + 1;
+            for (
+                std::size_t length = 0;
+                length <= std::min(
+                    m_max_symbol_length,
+                    static_cast<std::size_t>(std::distance(plaintext_it, plaintext.cend()))
+                );
+                ++length
+            ) {
+                auto const current_end_it = plaintext_it + static_cast<std::int64_t>(length);
 
                 if (auto const symbol_it = m_symbol_map.find(std::string_view(plaintext_it, current_end_it)); symbol_it != m_symbol_map.cend()) {
                     symbol_pair = &(symbol_it->second);
@@ -165,7 +172,10 @@ namespace rebar {
             // Test that symbol has been found.
             if (symbol_pair != nullptr) {
                 // Test that symbol is not interrupting an identifier.
-                if (auto const following_char = *symbol_end; !symbol_pair->second || !(std::isalnum(following_char) || following_char == '_')) {
+                if (
+                    auto const following_char = symbol_end != plaintext.cend() ? *symbol_end : '\0';
+                    !symbol_pair->second || !(std::isalnum(following_char) || following_char == '_')
+                ) {
                     auto const plaintext_position = get_iterator_plaintext_index(plaintext_it);
 
                     a_lexical_unit.push_token(
