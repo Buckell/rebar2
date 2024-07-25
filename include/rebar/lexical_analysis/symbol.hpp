@@ -54,6 +54,7 @@ namespace rebar {
         pipe_equals,             // |=
         double_pipe,             // ||
         double_pipe_equals,      // ||=
+        question,                // ?
         boolean_true,            // true
         boolean_false,           // false
     };
@@ -111,6 +112,7 @@ namespace rebar {
             { "|=",    { symbol::pipe_equals,             false, } },
             { "||",    { symbol::double_pipe,             false, } },
             { "||=",   { symbol::double_pipe_equals,      false, } },
+            { "?",     { symbol::question,                false, } },
             { "true",  { symbol::boolean_true,            true,  } },
             { "false", { symbol::boolean_false,           true,  } },
         };
@@ -158,6 +160,7 @@ namespace rebar {
             "pipe_equals",
             "double_pipe",
             "double_pipe_equals",
+            "question",
             "boolean_true",
             "boolean_false",
         };
