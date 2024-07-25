@@ -39,7 +39,7 @@ namespace rebar {
         std::vector<operation_tree_node> m_operands;
 
     public:
-        inline explicit operation_tree(operation a_operation) noexcept;
+        inline explicit operation_tree(operation a_operation = operation::null) noexcept;
 
         operation_tree(operation_tree const &) noexcept = default;
         operation_tree(operation_tree &&)      noexcept = default;
@@ -66,6 +66,12 @@ namespace rebar {
          * @param a_node The value of the operand to set.
          */
         void set_operand(std::size_t a_index, operation_tree_node a_node) noexcept;
+
+        /**
+         * Push an operand to the end of the operand list.
+         * @param a_node The value of the operand to push.
+         */
+        inline void push_operand(operation_tree_node a_node) noexcept;
 
         /**
          * Retrieve the type of an operand.
@@ -122,6 +128,10 @@ namespace rebar {
 
     void operation_tree::set_op(operation const a_operation) noexcept {
         m_operation = a_operation;
+    }
+
+    void operation_tree::push_operand(operation_tree_node a_node) noexcept {
+        m_operands.push_back(std::move(a_node));
     }
 
     inline operation_tree_node_type operation_tree::operand_type(std::size_t const a_index) const noexcept {
