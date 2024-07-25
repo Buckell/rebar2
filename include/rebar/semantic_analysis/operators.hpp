@@ -37,6 +37,7 @@ namespace rebar {
         modulo,
         modulo_assignment,
 
+        bitwise_not,
         bitwise_and,
         bitwise_and_assignment,
         bitwise_or,
@@ -44,6 +45,7 @@ namespace rebar {
         bitwise_xor,
         bitwise_xor_assignment,
 
+        logical_not,
         logical_and,
         logical_and_assignment,
         logical_or,
@@ -66,6 +68,14 @@ namespace rebar {
         greater_equality,
         greater_equality_assignment,
 
+        prefix_increment,
+        postfix_increment,
+
+        prefix_decrement,
+        postfix_decrement,
+
+        ternary,
+
         call,
         index,
         length,
@@ -75,21 +85,93 @@ namespace rebar {
      * An enumeration representing the association of an operator, either
      * left or right.
      */
-    enum class association {
+    enum class operator_association {
         left,
         right,
     };
 
     /**
+     * An enumeration representing how many parameters each operator takes
+     * and in which form they take them.
+     */
+    enum class operator_type {
+        unary,
+        binary,
+        trinary,
+        binary_enclose,
+    };
+
+    /**
      * A class linking a symbol to an operation, including association,
      * precedence, and other information.
+     *
+     * When type is trinary or binary_enclose, the secondary identifier symbol
+     * is used to mark either the beginning of the third parameter or the end
+     * of the second parameter, respectively.
      */
-    struct operation_info {
-        symbol base_symbol;
-        operation mapped_operation;
-        association operator_association;
-        std::size_t precedence;
+    struct operator_info {
+        symbol               identifier;
+        symbol               secondary;
+        operation            mapped_operation;
+        operator_type        type;
+        operator_association association;
+        std::size_t          precedence;
     };
+
+    using operator_registry = std::vector<operator_info>;
+
+    /**
+     * Generate the default Rebar operator registry.
+     * @return Default Rebar operator registry.
+     */
+    inline operator_registry default_operator_registry() {
+        return {
+            {
+                .identifier       = symbol::plus,
+                .mapped_operation = operation::addition,
+                .type             = operator_type::binary,
+                .association      = operator_association::left,
+                .precedence       = 6,
+            },
+            {
+                .identifier       = symbol::star,
+                .mapped_operation = operation::multiplication,
+                .type             = operator_type::binary,
+                .association      = operator_association::left,
+                .precedence       = 7,
+            },
+            {
+                .identifier       = symbol::exclamation,
+                .mapped_operation = operation::logical_not,
+                .type             = operator_type::unary,
+                .association      = operator_association::right,
+                .precedence       = 10,
+            },
+            {
+                .identifier       = symbol::bracket_left,
+                .secondary        = symbol::bracket_right,
+                .mapped_operation = operation::index,
+                .type             = operator_type::binary_enclose,
+                .association      = operator_association::left,
+                .precedence       = 12,
+            },
+            {
+                .identifier       = symbol::question,
+                .secondary        = symbol::colon,
+                .mapped_operation = operation::ternary,
+                .type             = operator_type::trinary,
+                .association      = operator_association::right,
+                .precedence       = 3,
+            },
+            {
+                .identifier       = symbol::double_plus,
+                .mapped_operation = operation::prefix_increment,
+                .type             = operator_type::unary,
+                .association      = operator_association::right,
+                .precedence       = 11,
+            },
+        };
+    }
 
 }
 
