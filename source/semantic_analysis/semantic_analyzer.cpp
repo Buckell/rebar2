@@ -44,7 +44,12 @@ namespace rebar {
         return base_scope;
     }
 
-    operation_tree_node semantic_analyzer::parse_expression(semantic_unit & a_semantic_unit, std::span<token const> const a_tokens) const { // NOLINT(*-no-recursion)
+    operation_tree_node semantic_analyzer::parse_expression(semantic_unit & a_semantic_unit, std::span<token const> a_tokens) const { // NOLINT(*-no-recursion)
+        // If expression is surrounded in parenthesis, parse inner content.
+        while (*a_tokens.begin() == symbol::parenthesis_left && *a_tokens.end() == symbol::parenthesis_right) {
+            a_tokens = { a_tokens.begin() + 1, a_tokens.end() - 1 };
+        }
+
         if (a_tokens.size() == 1) {
             return a_tokens[0];
         }
@@ -87,12 +92,13 @@ namespace rebar {
         };
 
         // Find last operator token matching symbol.
-        auto op_it = (
-            std::ranges::find_if(
-                a_tokens | std::views::reverse,
-                token_matches_operator_token
-            ) + 1
-        ).base();
+        auto op_it = tokens_scoped_increment_find_last(a_tokens.begin(), a_tokens.end(), token_matches_operator_token);
+        // (
+        //     std::ranges::find_if(
+        //         a_tokens | std::views::reverse,
+        //         token_matches_operator_token
+        //     ) + 1
+        // ).base();
 
         if (op_it == a_tokens.begin()) {
             const auto prefix_operator = std::ranges::find_if(op_infos, [](auto const & op_info) {
@@ -137,7 +143,7 @@ namespace rebar {
 
             // Match first operator in series if right associated.
             if (matched_op.association == operator_association::right) {
-                op_it = std::ranges::find_if(a_tokens, token_matches_operator_token);
+                op_it = tokens_scoped_increment_find(a_tokens.begin(), a_tokens.end(), token_matches_operator_token);
             }
 
             if (matched_op.type == operator_type::binary) {

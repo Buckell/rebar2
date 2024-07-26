@@ -39,7 +39,7 @@ namespace rebar {
         operation_tree_node parse_expression(semantic_unit & a_semantic_unit, std::span<token const> a_tokens) const;
 
         /**
-         * Find the next token matching the predicate function on the same
+         * Find the first token matching the predicate function on the same
          * scope level.
          * @tparam t_predicate Type of predicate function.
          * @param a_begin Beginning token iterator.
@@ -50,6 +50,23 @@ namespace rebar {
          */
         template <std::predicate<token const &> t_predicate>
         static std::span<token const>::iterator tokens_scoped_increment_find(
+            std::span<token const>::iterator a_begin,
+            std::span<token const>::iterator a_end,
+            t_predicate                      a_predicate
+        ) noexcept;
+
+        /**
+         * Find the last token matching the predicate function on the same
+         * scope level.
+         * @tparam t_predicate Type of predicate function.
+         * @param a_begin Beginning token iterator.
+         * @param a_end Ending token iterator.
+         * @param a_predicate Predicate against which to check.
+         * @return The iterator matched by the predicate or the ending iterator
+         *         if nothing is found.
+         */
+        template <std::predicate<token const &> t_predicate>
+        static std::span<token const>::iterator tokens_scoped_increment_find_last(
             std::span<token const>::iterator a_begin,
             std::span<token const>::iterator a_end,
             t_predicate                      a_predicate
@@ -69,7 +86,7 @@ namespace rebar {
         t_predicate a_predicate
     ) noexcept {
         auto token_it = a_begin;
-        std::size_t scope_level = 0;
+        std::int64_t scope_level = 0;
 
         while (++token_it != a_end) {
             auto const & current_token = *token_it;
@@ -96,6 +113,42 @@ namespace rebar {
 
         return a_end;
     }
+
+    template<std::predicate<token const &> t_predicate>
+std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find_last(
+    std::span<token const>::iterator const a_begin,
+    std::span<token const>::iterator const a_end,
+    t_predicate a_predicate
+) noexcept {
+        auto token_it = a_end - 1;
+        std::int64_t scope_level = 0;
+
+        while (--token_it >= a_begin) {
+            auto const & current_token = *token_it;
+
+            if (scope_level == 0 && a_predicate(current_token)) {
+                return token_it;
+            }
+
+            if (
+                current_token == symbol::brace_left ||
+                current_token == symbol::bracket_left ||
+                current_token == symbol::parenthesis_left
+            ) {
+                ++scope_level;
+            }
+            else if (
+                current_token == symbol::brace_right ||
+                current_token == symbol::bracket_right ||
+                current_token == symbol::parenthesis_right
+            ) {
+                --scope_level;
+            }
+        }
+
+        return a_end;
+    }
+
 
 }
 
