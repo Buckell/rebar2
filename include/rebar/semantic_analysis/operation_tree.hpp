@@ -114,6 +114,13 @@ namespace rebar {
         [[nodiscard]]
         inline operation_tree const & tree_operand(std::size_t a_index) const;
 
+        /**
+         * Generate a string representation of the operation tree.
+         * @param a_indent The indent of the entire representation (used for recursive generation).
+         * @return The string representation.
+         */
+        [[nodiscard]]
+        std::string to_string(std::size_t a_indent = 0) const noexcept;
     };
 
     // ###################################### INLINE DEFINITIONS ######################################
