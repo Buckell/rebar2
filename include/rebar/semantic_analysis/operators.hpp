@@ -202,6 +202,21 @@ namespace rebar {
     inline operator_registry default_operator_registry() {
         return {
             {
+                .identifier       = symbol::equals,
+                .mapped_operation = operation::assignment,
+                .type             = operator_type::binary,
+                .association      = operator_association::right,
+                .precedence       = 1,
+            },
+            {
+                .identifier       = symbol::question,
+                .secondary        = symbol::colon,
+                .mapped_operation = operation::ternary,
+                .type             = operator_type::trinary,
+                .association      = operator_association::right,
+                .precedence       = 3,
+            },
+            {
                 .identifier       = symbol::plus,
                 .mapped_operation = operation::addition,
                 .type             = operator_type::binary,
@@ -223,6 +238,20 @@ namespace rebar {
                 .precedence       = 10,
             },
             {
+                .identifier       = symbol::double_plus,
+                .mapped_operation = operation::prefix_increment,
+                .type             = operator_type::unary,
+                .association      = operator_association::right,
+                .precedence       = 11,
+            },
+            {
+                .identifier       = symbol::double_plus,
+                .mapped_operation = operation::postfix_increment,
+                .type             = operator_type::unary,
+                .association      = operator_association::left,
+                .precedence       = 11,
+            },
+            {
                 .identifier       = symbol::bracket_left,
                 .secondary        = symbol::bracket_right,
                 .mapped_operation = operation::index,
@@ -231,19 +260,11 @@ namespace rebar {
                 .precedence       = 12,
             },
             {
-                .identifier       = symbol::question,
-                .secondary        = symbol::colon,
-                .mapped_operation = operation::ternary,
-                .type             = operator_type::trinary,
-                .association      = operator_association::right,
-                .precedence       = 3,
-            },
-            {
-                .identifier       = symbol::double_plus,
-                .mapped_operation = operation::prefix_increment,
-                .type             = operator_type::unary,
-                .association      = operator_association::right,
-                .precedence       = 11,
+                .identifier       = symbol::period,
+                .mapped_operation = operation::index,
+                .type             = operator_type::binary,
+                .association      = operator_association::left,
+                .precedence       = 14,
             },
         };
     }
