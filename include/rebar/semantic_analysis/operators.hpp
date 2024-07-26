@@ -81,6 +81,81 @@ namespace rebar {
         length,
     };
 
+    constexpr std::string_view operation_as_string(operation const a_operation) noexcept {
+        using namespace std::string_view_literals;
+
+        constexpr std::array operation_strings{
+            "null",
+
+            "function",
+            "scope",
+            "conditional",
+            "preconditional_loop",
+            "postconditional_loop",
+            "conditional_initialization_loop",
+
+            "assignment",
+
+            "addition",
+            "addition_assignment",
+            "subtraction",
+            "subtraction_assignment",
+            "multiplication",
+            "multiplication_assignment",
+            "division",
+            "division_assignment",
+            "exponentiation",
+            "exponentiation_assignment",
+            "modulo",
+            "modulo_assignment",
+
+            "bitwise_not",
+            "bitwise_and",
+            "bitwise_and_assignment",
+            "bitwise_or",
+            "bitwise_or_assignment",
+            "bitwise_xor",
+            "bitwise_xor_assignment",
+
+            "logical_not",
+            "logical_and",
+            "logical_and_assignment",
+            "logical_or",
+            "logical_or_assignment",
+            "logical_xor",
+            "logical_xor_assignment",
+
+            "equality",
+            "equality_assignment",
+
+            "lesser",
+            "lesser_assignment",
+
+            "lesser_equality",
+            "lesser_equality_assignment",
+
+            "greater",
+            "greater_assignment",
+
+            "greater_equality",
+            "greater_equality_assignment",
+
+            "prefix_increment",
+            "postfix_increment",
+
+            "prefix_decrement",
+            "postfix_decrement",
+
+            "ternary",
+
+            "call",
+            "index",
+            "length",
+        };
+
+        return operation_strings[static_cast<size_t>(a_operation)];
+    }
+
     /**
      * An enumeration representing the association of an operator, either
      * left or right.
