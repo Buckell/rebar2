@@ -50,6 +50,7 @@ namespace rebar {
         colon,                   // :
         semicolon,               // ;
         comma,                   // ,
+        period,                  // .
         carrot_left,             // <
         carrot_right,            // >
         pipe,                    // |
@@ -110,6 +111,7 @@ namespace rebar {
             { ":",     { symbol::colon,                   false, } },
             { ";",     { symbol::semicolon,               false, } },
             { ",",     { symbol::comma,                   false, } },
+            { ".",     { symbol::period,                  false, } },
             { "<",     { symbol::carrot_left,             false, } },
             { ">",     { symbol::carrot_right,            false, } },
             { "|",     { symbol::pipe,                    false, } },
@@ -160,6 +162,7 @@ namespace rebar {
             "colon",
             "semicolon",
             "comma",
+            "period",
             "carrot_left",
             "carrot_right",
             "pipe",
