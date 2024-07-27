@@ -165,6 +165,54 @@ namespace rebar {
                     )
                 );
             }
+            else if (matched_op.type == operator_type::binary_enclose) {
+                auto const token_matches_end_symbol = [&matched_op](auto const & current_token) {
+                    return current_token == matched_op.secondary;
+                };
+
+                auto const end_op_it = tokens_scoped_increment_find(
+                    op_it,
+                    a_tokens.end(),
+                    token_matches_end_symbol
+                );
+
+                expression_tree->set_op(matched_op.mapped_operation);
+
+                if (matched_op.association == operator_association::left) {
+                    expression_tree->set_operand(
+                        0,
+                        parse_expression(
+                            a_semantic_unit,
+                            { a_tokens.begin(), op_it }
+                        )
+                    );
+
+                    expression_tree->set_operand(
+                        1,
+                        parse_expression(
+                            a_semantic_unit,
+                            { op_it + 1, end_op_it }
+                        )
+                    );
+                }
+                else if (matched_op.association == operator_association::right) {
+                    expression_tree->set_operand(
+                        0,
+                        parse_expression(
+                            a_semantic_unit,
+                            { end_op_it + 1, a_tokens.end() }
+                        )
+                    );
+
+                    expression_tree->set_operand(
+                        1,
+                        parse_expression(
+                            a_semantic_unit,
+                            { op_it + 1, end_op_it }
+                        )
+                    );
+                }
+            }
         }
 
         return std::move(expression_tree);
