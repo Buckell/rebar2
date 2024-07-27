@@ -78,6 +78,7 @@ namespace rebar {
 
         call,
         index,
+        dot_index,
         length,
     };
 
@@ -150,6 +151,7 @@ namespace rebar {
 
             "call",
             "index",
+            "dot_index",
             "length",
         };
 
@@ -261,7 +263,7 @@ namespace rebar {
             },
             {
                 .identifier       = symbol::period,
-                .mapped_operation = operation::index,
+                .mapped_operation = operation::dot_index,
                 .type             = operator_type::binary,
                 .association      = operator_association::left,
                 .precedence       = 14,
