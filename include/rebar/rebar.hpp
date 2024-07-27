@@ -20,6 +20,7 @@
 #include <rebar/semantic_analysis/semantic_unit.hpp>
 #include <rebar/string/string.hpp>
 #include <rebar/string/string_engine.hpp>
+#include <rebar/util/equal_to.hpp>
 #include <rebar/util/print.hpp>
 #include <rebar/util/static_string.hpp>
 
