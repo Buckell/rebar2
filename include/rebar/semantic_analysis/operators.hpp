@@ -172,10 +172,19 @@ namespace rebar {
      * and in which form they take them.
      */
     enum class operator_type {
+        /// An operator with one parameter on one side.
         unary,
+        /// An operator with two parameters on either side.
         binary,
+        /// An operator with three parameters delimited by two different
+        /// symbols. (As in the ternary operator.)
         trinary,
+        /// An operator with two parameters that uses two different symbols to
+        /// enclose the second parameter. (As in the index or call operators.)
         binary_enclose,
+        /// An operator with an infinite amount of parameters that are
+        /// delimited by a single symbol.
+        variadic,
     };
 
     /**
@@ -188,7 +197,7 @@ namespace rebar {
      */
     struct operator_info {
         symbol               identifier;
-        symbol               secondary;
+        symbol               secondary = symbol::null;
         operation            mapped_operation;
         operator_type        type;
         operator_association association;
@@ -260,6 +269,14 @@ namespace rebar {
                 .type             = operator_type::binary_enclose,
                 .association      = operator_association::left,
                 .precedence       = 12,
+            },
+            {
+                .identifier       = symbol::parenthesis_left,
+                .secondary        = symbol::parenthesis_right,
+                .mapped_operation = operation::call,
+                .type             = operator_type::binary_enclose,
+                .association      = operator_association::left,
+                .precedence       = 13,
             },
             {
                 .identifier       = symbol::period,
