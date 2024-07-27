@@ -79,7 +79,7 @@ namespace rebar {
         m_operator_registry(std::move(a_operator_registry))
     {}
 
-    template<std::predicate<token const &> t_predicate>
+    template <std::predicate<token const &> t_predicate>
     std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find(
         std::span<token const>::iterator const a_begin,
         std::span<token const>::iterator const a_end,
@@ -88,12 +88,8 @@ namespace rebar {
         auto token_it = a_begin;
         std::int64_t scope_level = 0;
 
-        while (++token_it != a_end) {
+        do {
             auto const & current_token = *token_it;
-
-            if (scope_level == 0 && a_predicate(current_token)) {
-                return token_it;
-            }
 
             if (
                 current_token == symbol::brace_left ||
@@ -109,26 +105,29 @@ namespace rebar {
             ) {
                 --scope_level;
             }
-        }
 
+            if (scope_level == 0 && a_predicate(current_token)) {
+                // ReSharper disable once CppDFALocalValueEscapesFunction
+                return token_it;
+            }
+        }
+        while (++token_it != a_end);
+
+        // ReSharper disable once CppDFALocalValueEscapesFunction
         return a_end;
     }
 
-    template<std::predicate<token const &> t_predicate>
-std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find_last(
-    std::span<token const>::iterator const a_begin,
-    std::span<token const>::iterator const a_end,
-    t_predicate a_predicate
-) noexcept {
+    template <std::predicate<token const &> t_predicate>
+    std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find_last(
+        std::span<token const>::iterator const a_begin,
+        std::span<token const>::iterator const a_end,
+        t_predicate a_predicate
+    ) noexcept {
         auto token_it = a_end - 1;
         std::int64_t scope_level = 0;
 
-        while (--token_it >= a_begin) {
+        while (true) {
             auto const & current_token = *token_it;
-
-            if (scope_level == 0 && a_predicate(current_token)) {
-                return token_it;
-            }
 
             if (
                 current_token == symbol::brace_left ||
@@ -144,8 +143,20 @@ std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find
             ) {
                 --scope_level;
             }
+
+            if (scope_level == 0 && a_predicate(current_token)) {
+                // ReSharper disable once CppDFALocalValueEscapesFunction
+                return token_it;
+            }
+
+            if (token_it == a_begin) {
+                break;
+            }
+
+            --token_it;
         }
 
+        // ReSharper disable once CppDFALocalValueEscapesFunction
         return a_end;
     }
 
