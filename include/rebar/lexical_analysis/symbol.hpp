@@ -16,6 +16,7 @@ namespace rebar {
      * keywords and other reserved sequences.
      */
     enum class symbol {
+        null = 0,                // null
         tilda,                   // ~
         exclamation,             // !
         exclamation_equals,      // !=
@@ -128,6 +129,7 @@ namespace rebar {
         using namespace std::string_view_literals;
 
         constexpr std::array symbol_strings{
+            "null",
             "tilda",
             "exclamation",
             "exclamation_equals",
