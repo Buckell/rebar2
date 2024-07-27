@@ -4,7 +4,9 @@
 
 #include <algorithm>
 #include <ranges>
+
 #include <rebar/semantic_analysis/semantic_analyzer.hpp>
+#include <rebar/util/equal_to.hpp>
 
 namespace rebar {
 
@@ -80,19 +82,17 @@ namespace rebar {
             operator_token_precedence
         );
 
-        auto const info_matches_operator_token = [&lowest_operator_token](auto const & op_info) {
-            return op_info.identifier == lowest_operator_token.get_symbol();
+        auto const lowest_operator_symbol = lowest_operator_token.get_symbol();
+
+        auto const info_matches_operator_token = [lowest_operator_symbol](auto const & op_info) {
+            return op_info.identifier == lowest_operator_symbol;
         };
 
         // Find all operators that match lowest precedence symbol.
         auto op_infos = std::ranges::views::filter(m_operator_registry, info_matches_operator_token);
 
-        auto const token_matches_operator_token = [&lowest_operator_token](auto const & current_token) {
-            return current_token.is_symbol() && current_token.get_symbol() == lowest_operator_token.get_symbol();
-        };
-
         // Find last operator token matching symbol.
-        auto op_it = tokens_scoped_increment_find_last(a_tokens.begin(), a_tokens.end(), token_matches_operator_token);
+        auto op_it = tokens_scoped_increment_find_last(a_tokens.begin(), a_tokens.end(), equal_to(lowest_operator_symbol));
         // (
         //     std::ranges::find_if(
         //         a_tokens | std::views::reverse,
@@ -143,7 +143,7 @@ namespace rebar {
 
             // Match first operator in series if right associated.
             if (matched_op.association == operator_association::right) {
-                op_it = tokens_scoped_increment_find(a_tokens.begin(), a_tokens.end(), token_matches_operator_token);
+                op_it = tokens_scoped_increment_find(a_tokens.begin(), a_tokens.end(), equal_to(lowest_operator_symbol));
             }
 
             if (matched_op.type == operator_type::binary) {
