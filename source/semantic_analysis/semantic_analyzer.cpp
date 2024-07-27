@@ -31,7 +31,7 @@ namespace rebar {
                 }
             );
 
-            token_it = statement_end + 1;
+            token_it = statement_end == a_tokens.end() ? statement_end : statement_end + 1;
 
             base_scope.push_operand(
                 parse_expression(
@@ -70,7 +70,7 @@ namespace rebar {
                 &operator_info::identifier
             );
 
-            return it != m_operator_registry.cend() ? it->precedence : 0;
+            return it != m_operator_registry.cend() ? it->precedence : 9999;
         };
 
         // Find lowest precedence operator.
