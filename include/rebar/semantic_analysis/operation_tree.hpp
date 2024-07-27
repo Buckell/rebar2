@@ -116,11 +116,20 @@ namespace rebar {
 
         /**
          * Generate a string representation of the operation tree.
-         * @param a_indent The indent of the entire representation (used for recursive generation).
          * @return The string representation.
          */
         [[nodiscard]]
-        std::string to_string(std::size_t a_indent = 0) const noexcept;
+        std::string to_string() const noexcept;
+
+        /**
+         * Generate a formatted and indented string representation of the
+         * operation tree.
+         * @param a_indent The indent of the entire representation (used for
+         *                 recursive generation).
+         * @return The string representation.
+         */
+        [[nodiscard]]
+        std::string to_string_pretty(std::size_t a_indent = 0) const noexcept;
     };
 
     // ###################################### INLINE DEFINITIONS ######################################
