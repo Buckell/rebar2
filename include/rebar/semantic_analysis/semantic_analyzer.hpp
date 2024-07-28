@@ -5,6 +5,8 @@
 #ifndef SEMANTIC_ANALYZER_H
 #define SEMANTIC_ANALYZER_H
 
+#include <functional>
+
 #include <rebar/lexical_analysis/lexical_unit.hpp>
 #include <rebar/semantic_analysis/operators.hpp>
 #include <rebar/semantic_analysis/semantic_unit.hpp>
@@ -56,34 +58,43 @@ namespace rebar {
          * Find the first token matching the predicate function on the same
          * scope level.
          * @tparam t_predicate Type of predicate function.
-         * @param a_begin Beginning token iterator.
-         * @param a_end Ending token iterator.
+         * @param a_range The range of tokens to scan.
          * @param a_predicate Predicate against which to check.
          * @return The iterator matched by the predicate or the ending iterator
          *         if nothing is found.
          */
-        template <std::predicate<token const &> t_predicate>
+        template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
         std::span<token const>::iterator tokens_scoped_increment_find(
-            std::span<token const>::iterator a_begin,
-            std::span<token const>::iterator a_end,
-            t_predicate                      a_predicate
+            t_range &&     a_range,
+            t_predicate && a_predicate
         ) const noexcept;
 
         /**
          * Find the last token matching the predicate function on the same
          * scope level.
          * @tparam t_predicate Type of predicate function.
-         * @param a_begin Beginning token iterator.
-         * @param a_end Ending token iterator.
+         * @param a_range The range of tokens to scan.
          * @param a_predicate Predicate against which to check.
          * @return The iterator matched by the predicate or the ending iterator
          *         if nothing is found.
          */
-        template <std::predicate<token const &> t_predicate>
+        template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
         std::span<token const>::iterator tokens_scoped_increment_find_last(
-            std::span<token const>::iterator a_begin,
-            std::span<token const>::iterator a_end,
-            t_predicate                      a_predicate
+            t_range &&     a_range,
+            t_predicate && a_predicate
+        ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>);
+
+        /**
+         * Filter all tokens matching predicate at the same scope level.
+         * @tparam t_predicate Type of predicate function.
+         * @param a_range The range of tokens to scan.
+         * @param a_predicate Predicate against which to check.
+         * @return The filter view of all tokens matching the predicate.
+         */
+        template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
+        auto tokens_scoped_increment_filter(
+            t_range &&     a_range,
+            t_predicate && a_predicate
         ) const noexcept;
     };
 
@@ -93,81 +104,120 @@ namespace rebar {
         m_operator_registry(std::move(a_operator_registry))
     {}
 
-    template <std::predicate<token const &> t_predicate>
+    template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
     std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find(
-        std::span<token const>::iterator const a_begin,
-        std::span<token const>::iterator const a_end,
-        t_predicate a_predicate
+        t_range &&     a_range,
+        t_predicate && a_predicate
     ) const noexcept {
-        auto token_it = a_begin;
-        std::int64_t scope_level = 0;
+        return std::ranges::find_if(
+            a_range,
+            [this, a_predicate](auto const & current_token) {
+                static std::int64_t scope_level = 0;
 
-        do {
-            auto const & current_token = *token_it;
-
-            if (current_token.is_symbol()) {
-                if (
-                    symbol const token_symbol = current_token.get_symbol();
-                    std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
-                ) {
-                    ++scope_level;
+                if (current_token.is_symbol()) {
+                    if (
+                        symbol const token_symbol = current_token.get_symbol();
+                        std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
+                    ) {
+                        return (scope_level++ == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
+                    }
+                    else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                        return (scope_level-- == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
+                    }
                 }
-                else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
-                    --scope_level;
-                }
-            }
 
-            if (scope_level == 0 && a_predicate(current_token)) {
-                // ReSharper disable once CppDFALocalValueEscapesFunction
-                return token_it;
+                return scope_level == 0 && std::invoke(a_predicate, current_token);
             }
-        }
-        while (++token_it != a_end);
+        );
 
-        // ReSharper disable once CppDFALocalValueEscapesFunction
-        return a_end;
+        // auto token_it = a_begin;
+        // std::int64_t scope_level = 0;
+        //
+        // do {
+        //     auto const & current_token = *token_it;
+        //
+        //     if (current_token.is_symbol()) {
+        //         if (
+        //             symbol const token_symbol = current_token.get_symbol();
+        //             std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
+        //         ) {
+        //             ++scope_level;
+        //         }
+        //         else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+        //             --scope_level;
+        //         }
+        //     }
+        //
+        //     if (scope_level == 0 && a_predicate(current_token)) {
+        //         // ReSharper disable once CppDFALocalValueEscapesFunction
+        //         return token_it;
+        //     }
+        // }
+        // while (++token_it != a_end);
+        //
+        // // ReSharper disable once CppDFALocalValueEscapesFunction
+        // return a_end;
     }
 
-    template <std::predicate<token const &> t_predicate>
+    template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
     std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find_last(
-        std::span<token const>::iterator const a_begin,
-        std::span<token const>::iterator const a_end,
-        t_predicate a_predicate
-    ) const noexcept {
-        auto token_it = a_end - 1;
-        std::int64_t scope_level = 0;
+        t_range&&     a_range,
+        t_predicate&& a_predicate
+    ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>) {
+        // (
+        //     std::ranges::find_if(
+        //         a_tokens | std::views::reverse,
+        //         token_matches_operator_token
+        //     ) + 1
+        // ).base();
 
-        while (true) {
-            auto const & current_token = *token_it;
+        return (
+            std::ranges::find_if(
+                a_range | std::views::reverse,
+                [this, a_predicate](auto const & current_token) {
+                    static std::int64_t scope_level = 0;
+
+                    if (current_token.is_symbol()) {
+                        if (
+                            symbol const token_symbol = current_token.get_symbol();
+                            std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
+                        ) {
+                            return (scope_level++ == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
+                        }
+                        else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                            return (scope_level-- == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
+                        }
+                    }
+
+                    return scope_level == 0 && std::invoke(a_predicate, current_token);
+                }
+            ) + 1
+        ).base();
+    }
+
+    template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
+    auto semantic_analyzer::tokens_scoped_increment_filter(
+        t_range &&     a_range,
+        t_predicate && a_predicate
+    ) const noexcept {
+        return a_range | std::views::filter([this, a_predicate](token const & current_token) {
+            static std::int64_t scope_level = 0;
 
             if (current_token.is_symbol()) {
                 if (
                     symbol const token_symbol = current_token.get_symbol();
                     std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
                 ) {
-                    ++scope_level;
+                    return (scope_level++ == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                 }
                 else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
-                    --scope_level;
+                    return (scope_level-- == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                 }
             }
 
-            if (scope_level == 0 && a_predicate(current_token)) {
-                // ReSharper disable once CppDFALocalValueEscapesFunction
-                return token_it;
-            }
-
-            if (token_it == a_begin) {
-                break;
-            }
-
-            --token_it;
-        }
-
-        // ReSharper disable once CppDFALocalValueEscapesFunction
-        return a_end;
+            return scope_level == 0 && std::invoke(a_predicate, current_token);
+        });
     }
-
 
 }
 
