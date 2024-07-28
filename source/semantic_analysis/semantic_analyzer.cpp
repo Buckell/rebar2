@@ -7,6 +7,7 @@
 
 #include <rebar/semantic_analysis/semantic_analyzer.hpp>
 #include <rebar/util/equal_to.hpp>
+#include <rebar/util/print.hpp>
 
 namespace rebar {
 
@@ -26,8 +27,7 @@ namespace rebar {
             auto const statement_begin = token_it;
 
             auto const statement_end = tokens_scoped_increment_find(
-                statement_begin,
-                a_tokens.end(),
+                std::span(statement_begin, a_tokens.end()),
                 [](auto const & a_token) {
                     return a_token == symbol::semicolon;
                 }
@@ -48,7 +48,13 @@ namespace rebar {
 
     operation_tree_node semantic_analyzer::parse_expression(semantic_unit & a_semantic_unit, std::span<token const> a_tokens) const { // NOLINT(*-no-recursion)
         // If expression is surrounded in parenthesis, parse inner content.
-        while (*a_tokens.begin() == symbol::parenthesis_left && *a_tokens.end() == symbol::parenthesis_right) {
+        while (
+            *a_tokens.begin() == symbol::parenthesis_left &&
+            tokens_scoped_increment_find(
+                a_tokens,
+                equal_to(symbol::parenthesis_right)
+            ) == a_tokens.end() - 1
+        ) {
             a_tokens = { a_tokens.begin() + 1, a_tokens.end() - 1 };
         }
 
@@ -57,12 +63,6 @@ namespace rebar {
         }
 
         auto expression_tree = std::make_unique<operation_tree>();
-
-        auto symbol_tokens = std::ranges::views::filter(a_tokens, &token::is_symbol);
-
-        if (symbol_tokens.empty()) {
-            // TODO: Throw error.
-        }
 
         // Projection function for token precedence.
         auto const operator_token_precedence = [this](auto const & current_token) {
@@ -75,14 +75,19 @@ namespace rebar {
             return it != m_operator_registry.cend() ? it->precedence : 9999;
         };
 
-        // Find lowest precedence operator.
-        auto const & lowest_operator_token = std::ranges::min(
-            symbol_tokens,
-            {},
-            operator_token_precedence
-        );
+        auto lowest_operator_symbol = symbol::null;
+        std::size_t lowest_precedence = std::numeric_limits<std::size_t>::max();
 
-        auto const lowest_operator_symbol = lowest_operator_token.get_symbol();
+        // Find lowest precedence operator symbol.
+        for (auto const & current_token : tokens_scoped_increment_filter(a_tokens, &token::is_symbol)) {
+            if (
+                auto const precedence = operator_token_precedence(current_token);
+                precedence <= lowest_precedence
+            ) {
+                lowest_precedence = precedence;
+                lowest_operator_symbol = current_token.get_symbol();
+            }
+        }
 
         auto const info_matches_operator_token = [lowest_operator_symbol](auto const & op_info) {
             return op_info.identifier == lowest_operator_symbol;
@@ -92,13 +97,7 @@ namespace rebar {
         auto op_infos = std::ranges::views::filter(m_operator_registry, info_matches_operator_token);
 
         // Find last operator token matching symbol.
-        auto op_it = tokens_scoped_increment_find_last(a_tokens.begin(), a_tokens.end(), equal_to(lowest_operator_symbol));
-        // (
-        //     std::ranges::find_if(
-        //         a_tokens | std::views::reverse,
-        //         token_matches_operator_token
-        //     ) + 1
-        // ).base();
+        auto op_it = tokens_scoped_increment_find_last(a_tokens, equal_to(lowest_operator_symbol));
 
         if (op_it == a_tokens.begin()) {
             const auto prefix_operator = std::ranges::find_if(op_infos, [](auto const & op_info) {
@@ -143,7 +142,7 @@ namespace rebar {
 
             // Match first operator in series if right associated.
             if (matched_op.association == operator_association::right) {
-                op_it = tokens_scoped_increment_find(a_tokens.begin(), a_tokens.end(), equal_to(lowest_operator_symbol));
+                op_it = tokens_scoped_increment_find(a_tokens, equal_to(lowest_operator_symbol));
             }
 
             if (matched_op.type == operator_type::binary) {
@@ -171,8 +170,7 @@ namespace rebar {
                 };
 
                 auto const end_op_it = tokens_scoped_increment_find(
-                    op_it,
-                    a_tokens.end(),
+                    std::span(op_it, a_tokens.end()),
                     token_matches_end_symbol
                 );
 
@@ -212,6 +210,29 @@ namespace rebar {
                         )
                     );
                 }
+            }
+            else if (matched_op.type == operator_type::variadic) {
+                expression_tree->set_op(matched_op.mapped_operation);
+
+                auto expression_begin = a_tokens.begin();
+                auto expression_end   = a_tokens.begin();
+
+                do {
+                    expression_end = tokens_scoped_increment_find(
+                        std::span(expression_begin, a_tokens.end()),
+                        equal_to(lowest_operator_symbol)
+                    );
+
+                    expression_tree->push_operand(
+                        parse_expression(
+                            a_semantic_unit,
+                            { expression_begin, expression_end }
+                        )
+                    );
+
+                    expression_begin = expression_end + 1;
+                }
+                while (expression_end != a_tokens.end());
             }
         }
 
