@@ -99,7 +99,7 @@ namespace rebar {
         // Find last operator token matching symbol.
         auto op_it = tokens_scoped_increment_find_last(a_tokens, equal_to(lowest_operator_symbol));
 
-        if (op_it == a_tokens.begin()) {
+        if (op_it == a_tokens.begin() || (*a_tokens.begin() == lowest_operator_symbol && lowest_operator_symbol != symbol::parenthesis_left)) {
             const auto prefix_operator = std::ranges::find_if(op_infos, [](auto const & op_info) {
                 return op_info.type == operator_type::unary && op_info.association == operator_association::right;
             });
