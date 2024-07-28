@@ -109,11 +109,11 @@ namespace rebar {
         t_range &&     a_range,
         t_predicate && a_predicate
     ) const noexcept {
+        std::int64_t scope_level = 0;
+
         return std::ranges::find_if(
             a_range,
-            [this, a_predicate](auto const & current_token) {
-                static std::int64_t scope_level = 0;
-
+            [this, a_predicate, &scope_level](auto const & current_token) {
                 if (current_token.is_symbol()) {
                     if (
                         symbol const token_symbol = current_token.get_symbol();
@@ -171,12 +171,12 @@ namespace rebar {
         //     ) + 1
         // ).base();
 
+        std::int64_t scope_level = 0;
+
         return (
             std::ranges::find_if(
                 a_range | std::views::reverse,
-                [this, a_predicate](auto const & current_token) {
-                    static std::int64_t scope_level = 0;
-
+                [this, a_predicate, &scope_level](auto const & current_token) {
                     if (current_token.is_symbol()) {
                         if (
                             symbol const token_symbol = current_token.get_symbol();
