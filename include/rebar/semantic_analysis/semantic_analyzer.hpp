@@ -18,6 +18,20 @@ namespace rebar {
     class semantic_analyzer {
         operator_registry m_operator_registry;
 
+        std::vector<symbol> m_scope_increase_symbols = {
+            symbol::brace_left,
+            symbol::bracket_left,
+            symbol::parenthesis_left,
+            symbol::carrot_left,
+        };
+
+        std::vector<symbol> m_scope_decrease_symbols = {
+            symbol::brace_right,
+            symbol::bracket_right,
+            symbol::parenthesis_right,
+            symbol::carrot_right,
+        };
+
     public:
         inline explicit semantic_analyzer(operator_registry a_operator_registry = default_operator_registry()) noexcept;
 
@@ -49,11 +63,11 @@ namespace rebar {
          *         if nothing is found.
          */
         template <std::predicate<token const &> t_predicate>
-        static std::span<token const>::iterator tokens_scoped_increment_find(
+        std::span<token const>::iterator tokens_scoped_increment_find(
             std::span<token const>::iterator a_begin,
             std::span<token const>::iterator a_end,
             t_predicate                      a_predicate
-        ) noexcept;
+        ) const noexcept;
 
         /**
          * Find the last token matching the predicate function on the same
@@ -66,11 +80,11 @@ namespace rebar {
          *         if nothing is found.
          */
         template <std::predicate<token const &> t_predicate>
-        static std::span<token const>::iterator tokens_scoped_increment_find_last(
+        std::span<token const>::iterator tokens_scoped_increment_find_last(
             std::span<token const>::iterator a_begin,
             std::span<token const>::iterator a_end,
             t_predicate                      a_predicate
-        ) noexcept;
+        ) const noexcept;
     };
 
     // ###################################### INLINE DEFINITIONS ######################################
@@ -84,26 +98,23 @@ namespace rebar {
         std::span<token const>::iterator const a_begin,
         std::span<token const>::iterator const a_end,
         t_predicate a_predicate
-    ) noexcept {
+    ) const noexcept {
         auto token_it = a_begin;
         std::int64_t scope_level = 0;
 
         do {
             auto const & current_token = *token_it;
 
-            if (
-                current_token == symbol::brace_left ||
-                current_token == symbol::bracket_left ||
-                current_token == symbol::parenthesis_left
-            ) {
-                ++scope_level;
-            }
-            else if (
-                current_token == symbol::brace_right ||
-                current_token == symbol::bracket_right ||
-                current_token == symbol::parenthesis_right
-            ) {
-                --scope_level;
+            if (current_token.is_symbol()) {
+                if (
+                    symbol const token_symbol = current_token.get_symbol();
+                    std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
+                ) {
+                    ++scope_level;
+                }
+                else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                    --scope_level;
+                }
             }
 
             if (scope_level == 0 && a_predicate(current_token)) {
@@ -122,26 +133,23 @@ namespace rebar {
         std::span<token const>::iterator const a_begin,
         std::span<token const>::iterator const a_end,
         t_predicate a_predicate
-    ) noexcept {
+    ) const noexcept {
         auto token_it = a_end - 1;
         std::int64_t scope_level = 0;
 
         while (true) {
             auto const & current_token = *token_it;
 
-            if (
-                current_token == symbol::brace_left ||
-                current_token == symbol::bracket_left ||
-                current_token == symbol::parenthesis_left
-            ) {
-                ++scope_level;
-            }
-            else if (
-                current_token == symbol::brace_right ||
-                current_token == symbol::bracket_right ||
-                current_token == symbol::parenthesis_right
-            ) {
-                --scope_level;
+            if (current_token.is_symbol()) {
+                if (
+                    symbol const token_symbol = current_token.get_symbol();
+                    std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
+                ) {
+                    ++scope_level;
+                }
+                else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                    --scope_level;
+                }
             }
 
             if (scope_level == 0 && a_predicate(current_token)) {
