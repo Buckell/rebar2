@@ -6,11 +6,12 @@
 #define ENVIRONMENT_HPP
 
 #include <rebar/lexical_analysis/lexical_analyzer.hpp>
+#include <rebar/semantic_analysis/semantic_analyzer.hpp>
 #include <rebar/string/string_engine.hpp>
 
 namespace rebar {
 
-    class environment : string_engine, lexical_analyzer {
+    class environment : string_engine, lexical_analyzer, semantic_analyzer {
     public:
         inline environment() noexcept;
 
@@ -21,8 +22,11 @@ namespace rebar {
         environment & operator = (environment &&) noexcept = default;
 
         using string_engine::str;
+
         using lexical_analyzer::perform_analysis;
         using lexical_analyzer::process_string;
+
+        using semantic_analyzer::perform_analysis;
     };
 
     // ###################################### INLINE DEFINITIONS ######################################
