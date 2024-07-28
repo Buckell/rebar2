@@ -77,9 +77,13 @@ namespace rebar {
         ternary,
 
         call,
+
         index,
         dot_index,
+
         length,
+
+        sequence,
     };
 
     constexpr std::string_view operation_as_string(operation const a_operation) noexcept {
@@ -150,9 +154,13 @@ namespace rebar {
             "ternary",
 
             "call",
+
             "index",
             "dot_index",
+
             "length",
+
+            "sequence",
         };
 
         return operation_strings[static_cast<size_t>(a_operation)];
@@ -213,11 +221,17 @@ namespace rebar {
     inline operator_registry default_operator_registry() {
         return {
             {
+                .identifier       = symbol::comma,
+                .mapped_operation = operation::sequence,
+                .type             = operator_type::variadic,
+                .precedence       = 1,
+            },
+            {
                 .identifier       = symbol::equals,
                 .mapped_operation = operation::assignment,
                 .type             = operator_type::binary,
                 .association      = operator_association::right,
-                .precedence       = 1,
+                .precedence       = 2,
             },
             {
                 .identifier       = symbol::question,
