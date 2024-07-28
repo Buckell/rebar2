@@ -50,6 +50,30 @@ namespace rebar {
         println(a_operation_tree.to_string());
     }
 
+    inline void print(token const & a_token) noexcept {
+        print(a_token.to_string());
+    }
+
+    inline void println(token const & a_token) noexcept {
+        println(a_token.to_string());
+    }
+
+    inline void print(symbol const a_symbol) noexcept {
+        print(symbol_as_string(a_symbol));
+    }
+
+    inline void println(symbol const a_symbol) noexcept {
+        println(symbol_as_string(a_symbol));
+    }
+
+    inline void print(operation const a_operation) noexcept {
+        print(operation_as_string(a_operation));
+    }
+
+    inline void println(operation const a_operation) noexcept {
+        println(operation_as_string(a_operation));
+    }
+
 }
 
 #endif //PRINT_HPP
