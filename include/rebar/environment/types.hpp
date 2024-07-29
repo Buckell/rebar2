@@ -44,11 +44,11 @@ namespace rebar {
         function = 5, ///< Function type: Represents a callable function.
 
         // Complex Type, Complexly Comparable:
-        table   =  5, /**< Table type: Represents a key/value map of objects to
+        table   =  6, /**< Table type: Represents a key/value map of objects to
                        *   objects.
                        */
-        array   =  6, ///< Array type: Represents an array of objects.
-        native  =  7, /**< Native object type: Represents a natively-defined
+        array   =  7, ///< Array type: Represents an array of objects.
+        native  =  8, /**< Native object type: Represents a natively-defined
                        *   object.
                        */
     };
