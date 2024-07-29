@@ -89,12 +89,13 @@ namespace rebar {
             }
         }
 
-        auto const info_matches_operator_token = [lowest_operator_symbol](auto const & op_info) {
+        // Predicate for matching operator info to the matched symbol.
+        auto const info_matches_operator_symbol = [lowest_operator_symbol](auto const & op_info) {
             return op_info.identifier == lowest_operator_symbol;
         };
 
         // Find all operators that match lowest precedence symbol.
-        auto op_infos = std::ranges::views::filter(m_operator_registry, info_matches_operator_token);
+        auto op_infos = std::ranges::views::filter(m_operator_registry, info_matches_operator_symbol);
 
         // Find last operator token matching symbol.
         auto op_it = tokens_scoped_increment_find_last(a_tokens, equal_to(lowest_operator_symbol));
@@ -165,13 +166,9 @@ namespace rebar {
                 );
             }
             else if (matched_op.type == operator_type::binary_enclose) {
-                auto const token_matches_end_symbol = [&matched_op](auto const & current_token) {
-                    return current_token == matched_op.secondary;
-                };
-
                 auto const end_op_it = tokens_scoped_increment_find(
                     std::span(op_it, a_tokens.end()),
-                    token_matches_end_symbol
+                    equal_to(matched_op.secondary)
                 );
 
                 expression_tree->set_op(matched_op.mapped_operation);
