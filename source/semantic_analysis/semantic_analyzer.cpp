@@ -27,7 +27,8 @@ namespace rebar {
             auto const statement_begin = token_it;
 
             auto const statement_end = tokens_scoped_increment_find(
-                std::span(statement_begin, a_tokens.end()),
+                statement_begin,
+                a_tokens.end(),
                 [](auto const & a_token) {
                     return a_token == symbol::semicolon;
                 }
@@ -176,7 +177,8 @@ namespace rebar {
             else if (matched_op.type == operator_type::binary_enclose) {
                 // Find closing operator.
                 auto const end_op_it = tokens_scoped_increment_find(
-                    std::span(op_it, a_tokens.end()),
+                    op_it,
+                    a_tokens.end(),
                     equal_to(matched_op.secondary)
                 );
 
@@ -225,9 +227,10 @@ namespace rebar {
                 auto expression_end   = a_tokens.begin();
 
                 // Add expressions to operator operands, delimited by operator.
-                do {
+                while (true) {
                     expression_end = tokens_scoped_increment_find(
-                        std::span(expression_begin, a_tokens.end()),
+                        expression_begin,
+                        a_tokens.end(),
                         equal_to(lowest_operator_symbol)
                     );
 
@@ -238,9 +241,12 @@ namespace rebar {
                         )
                     );
 
-                    expression_begin = expression_end + 1;
+                    if (expression_end != a_tokens.end()) {
+                        expression_begin = expression_end + 1;
+                    } else {
+                        break;
+                    }
                 }
-                while (expression_end != a_tokens.end());
             }
         }
 

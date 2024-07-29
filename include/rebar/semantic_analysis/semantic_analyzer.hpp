@@ -60,6 +60,23 @@ namespace rebar {
          * Find the first token matching the predicate function on the same
          * scope level.
          * @tparam t_predicate Type of predicate function.
+         * @param a_begin The beginning iterator from which to scan.
+         * @param a_end The ending iterator to which to scan.
+         * @param a_predicate Predicate against which to check.
+         * @return The iterator matched by the predicate or the ending iterator
+         *         if nothing is found.
+         */
+        template <std::predicate<token const &> t_predicate>
+        std::span<token const>::iterator tokens_scoped_increment_find(
+            std::span<token const>::iterator a_begin,
+            std::span<token const>::iterator a_end,
+            t_predicate &&                   a_predicate
+        ) const noexcept;
+
+        /**
+         * Find the first token matching the predicate function on the same
+         * scope level.
+         * @tparam t_predicate Type of predicate function.
          * @param a_range The range of tokens to scan.
          * @param a_predicate Predicate against which to check.
          * @return The iterator matched by the predicate or the ending iterator
@@ -69,6 +86,23 @@ namespace rebar {
         std::span<token const>::iterator tokens_scoped_increment_find(
             t_range &&     a_range,
             t_predicate && a_predicate
+        ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>);
+
+        /**
+         * Find the last token matching the predicate function on the same
+         * scope level.
+         * @tparam t_predicate Type of predicate function.
+         * @param a_begin The beginning iterator to which to scan.
+         * @param a_end The ending iterator from which to scan.
+         * @param a_predicate Predicate against which to check.
+         * @return The iterator matched by the predicate or the ending iterator
+         *         if nothing is found.
+         */
+        template <std::predicate<token const &> t_predicate>
+        std::span<token const>::iterator tokens_scoped_increment_find_last(
+            std::span<token const>::reverse_iterator a_begin,
+            std::span<token const>::reverse_iterator a_end,
+            t_predicate &&                   a_predicate
         ) const noexcept;
 
         /**
@@ -89,6 +123,21 @@ namespace rebar {
         /**
          * Filter all tokens matching predicate at the same scope level.
          * @tparam t_predicate Type of predicate function.
+         * @param a_begin The beginning iterator from which to scan.
+         * @param a_end The ending iterator to which to scan.
+         * @param a_predicate Predicate against which to check.
+         * @return The filter view of all tokens matching the predicate.
+         */
+        template <std::predicate<token const &> t_predicate>
+        auto tokens_scoped_increment_filter(
+            std::span<token const>::iterator a_begin,
+            std::span<token const>::iterator a_end,
+            t_predicate &&                           a_predicate
+        ) const noexcept;
+
+        /**
+         * Filter all tokens matching predicate at the same scope level.
+         * @tparam t_predicate Type of predicate function.
          * @param a_range The range of tokens to scan.
          * @param a_predicate Predicate against which to check.
          * @return The filter view of all tokens matching the predicate.
@@ -97,7 +146,7 @@ namespace rebar {
         auto tokens_scoped_increment_filter(
             t_range &&     a_range,
             t_predicate && a_predicate
-        ) const noexcept;
+        ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>);
     };
 
     // ###################################### INLINE DEFINITIONS ######################################
@@ -106,15 +155,17 @@ namespace rebar {
         m_operator_registry(std::move(a_operator_registry))
     {}
 
-    template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
+    template <std::predicate<token const &> t_predicate>
     std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find(
-        t_range &&     a_range,
-        t_predicate && a_predicate
+        std::span<token const>::iterator a_begin,
+        std::span<token const>::iterator a_end,
+        t_predicate &&                   a_predicate
     ) const noexcept {
         std::int64_t scope_level = 0;
 
         return std::ranges::find_if(
-            a_range,
+            a_begin,
+            a_end,
             [this, a_predicate, &scope_level](auto const & current_token) {
                 if (current_token.is_symbol()) {
                     // Determine if token is an increase/decrease symbol.
@@ -166,23 +217,31 @@ namespace rebar {
         // return a_end;
     }
 
-    template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
-    std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find_last(
-        t_range&&     a_range,
-        t_predicate&& a_predicate
-    ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>) {
-        // (
-        //     std::ranges::find_if(
-        //         a_tokens | std::views::reverse,
-        //         token_matches_operator_token
-        //     ) + 1
-        // ).base();
 
+    template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
+    std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find(
+        t_range &&     a_range,
+        t_predicate && a_predicate
+    ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>) {
+        return tokens_scoped_increment_find(
+            std::ranges::begin(a_range),
+            std::ranges::end(a_range),
+            std::forward<t_predicate>(a_predicate)
+        );
+    }
+
+    template <std::predicate<token const &> t_predicate>
+    std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find_last(
+        std::span<token const>::reverse_iterator a_begin,
+        std::span<token const>::reverse_iterator a_end,
+        t_predicate &&                   a_predicate
+    ) const noexcept {
         std::int64_t scope_level = 0;
 
         return (
             std::ranges::find_if(
-                a_range | std::views::reverse,
+                a_begin,
+                a_end,
                 [this, a_predicate, &scope_level](auto const & current_token) {
                     if (current_token.is_symbol()) {
                         // Determine if token is an increase/decrease symbol.
@@ -205,13 +264,63 @@ namespace rebar {
                 }
             ) + 1
         ).base();
+
+        // (
+        //     std::ranges::find_if(
+        //         a_tokens | std::views::reverse,
+        //         token_matches_operator_token
+        //     ) + 1
+        // ).base();
+    }
+
+    template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
+    std::span<token const>::iterator semantic_analyzer::tokens_scoped_increment_find_last(
+        t_range&&     a_range,
+        t_predicate&& a_predicate
+    ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>) {
+        return tokens_scoped_increment_find_last(
+            std::ranges::rbegin(a_range),
+            std::ranges::rend(a_range),
+            std::forward<t_predicate>(a_predicate)
+        );
+    }
+
+    template <std::predicate<token const &> t_predicate>
+    auto semantic_analyzer::tokens_scoped_increment_filter(
+        std::span<token const>::iterator a_begin,
+        std::span<token const>::iterator a_end,
+        t_predicate &&                   a_predicate
+    ) const noexcept {
+        return std::views::filter(a_begin, a_end, [this, a_predicate](token const & current_token) {
+           static std::int64_t scope_level = 0;
+
+           if (current_token.is_symbol()) {
+               // Determine if token is an increase/decrease symbol.
+
+               if (
+                   symbol const token_symbol = current_token.get_symbol();
+                   std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
+               ) {
+                   // Return true if symbol matches an increase token and
+                   // if the scope level is at zero or will be at zero.
+                   return (scope_level++ == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
+               }
+               else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                   // Return true if symbol matches a decrease token and
+                   // if the scope level is at zero or will be at zero.
+                   return (scope_level-- == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
+               }
+           }
+
+           return scope_level == 0 && std::invoke(a_predicate, current_token);
+       });
     }
 
     template <std::ranges::range t_range, std::predicate<token const &> t_predicate>
     auto semantic_analyzer::tokens_scoped_increment_filter(
         t_range &&     a_range,
         t_predicate && a_predicate
-    ) const noexcept {
+    ) const noexcept requires(std::is_same_v<std::decay_t<std::ranges::range_value_t<t_range>>, token>) {
         return a_range | std::views::filter([this, a_predicate](token const & current_token) {
             static std::int64_t scope_level = 0;
 
