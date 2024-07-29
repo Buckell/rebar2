@@ -7,6 +7,7 @@
 
 namespace rebar {
 
+    /// Predicate for being equal to another value regardless of type.
     template <typename t_contained>
     struct equal_to {
         t_contained const contained;
@@ -21,6 +22,7 @@ namespace rebar {
         }
     };
 
+    /// Predicate for being equal to another value (reference) regardless of type.
     template <typename t_contained, typename t_compare>
     struct equal_to_reference {
         t_contained const & contained_reference;
