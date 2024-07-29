@@ -20,6 +20,7 @@ namespace rebar {
     class semantic_analyzer {
         operator_registry m_operator_registry;
 
+        /// Scope level increase symbols for scoped algorithms.
         std::vector<symbol> m_scope_increase_symbols = {
             symbol::brace_left,
             symbol::bracket_left,
@@ -27,6 +28,7 @@ namespace rebar {
             symbol::carrot_left,
         };
 
+        /// Scope level decrease symbols for scoped algorithms.
         std::vector<symbol> m_scope_decrease_symbols = {
             symbol::brace_right,
             symbol::bracket_right,
@@ -115,13 +117,18 @@ namespace rebar {
             a_range,
             [this, a_predicate, &scope_level](auto const & current_token) {
                 if (current_token.is_symbol()) {
+                    // Determine if token is an increase/decrease symbol.
                     if (
                         symbol const token_symbol = current_token.get_symbol();
                         std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
                     ) {
+                        // Return true if symbol matches an increase token and
+                        // if the scope level is at zero or will be at zero.
                         return (scope_level++ == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                     }
                     else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                        // Return true if symbol matches a decrease token and
+                        // if the scope level is at zero or will be at zero.
                         return (scope_level-- == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                     }
                 }
@@ -178,13 +185,18 @@ namespace rebar {
                 a_range | std::views::reverse,
                 [this, a_predicate, &scope_level](auto const & current_token) {
                     if (current_token.is_symbol()) {
+                        // Determine if token is an increase/decrease symbol.
                         if (
                             symbol const token_symbol = current_token.get_symbol();
                             std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
                         ) {
+                            // Return true if symbol matches an increase token and
+                            // if the scope level is at zero or will be at zero.
                             return (scope_level++ == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                         }
                         else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                            // Return true if symbol matches a decrease token and
+                            // if the scope level is at zero or will be at zero.
                             return (scope_level-- == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                         }
                     }
@@ -204,13 +216,19 @@ namespace rebar {
             static std::int64_t scope_level = 0;
 
             if (current_token.is_symbol()) {
+                // Determine if token is an increase/decrease symbol.
+
                 if (
                     symbol const token_symbol = current_token.get_symbol();
                     std::ranges::find(m_scope_increase_symbols, token_symbol) != m_scope_increase_symbols.end()
                 ) {
+                    // Return true if symbol matches an increase token and
+                    // if the scope level is at zero or will be at zero.
                     return (scope_level++ == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                 }
                 else if (std::ranges::find(m_scope_decrease_symbols, token_symbol) != m_scope_decrease_symbols.end()) {
+                    // Return true if symbol matches a decrease token and
+                    // if the scope level is at zero or will be at zero.
                     return (scope_level-- == 0 || scope_level == 0) && std::invoke(a_predicate, current_token);
                 }
             }

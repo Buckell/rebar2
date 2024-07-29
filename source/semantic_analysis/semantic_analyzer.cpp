@@ -47,7 +47,7 @@ namespace rebar {
     }
 
     operation_tree_node semantic_analyzer::parse_expression(semantic_unit & a_semantic_unit, std::span<token const> a_tokens) const { // NOLINT(*-no-recursion)
-        // If expression is surrounded in parenthesis, parse inner content.
+        // If expression is surrounded in parenthesis, redefine tokens to inner content.
         while (
             *a_tokens.begin() == symbol::parenthesis_left &&
             tokens_scoped_increment_find(
@@ -64,7 +64,7 @@ namespace rebar {
 
         auto expression_tree = std::make_unique<operation_tree>();
 
-        // Projection function for token precedence.
+        // Projection function for token operator precedence.
         auto const operator_token_precedence = [this](auto const & current_token) {
             const auto it = std::ranges::find(
                 m_operator_registry,
@@ -76,9 +76,10 @@ namespace rebar {
         };
 
         auto lowest_operator_symbol = symbol::null;
-        std::size_t lowest_precedence = std::numeric_limits<std::size_t>::max();
 
         // Find lowest precedence operator symbol.
+        std::size_t lowest_precedence = std::numeric_limits<std::size_t>::max();
+
         for (auto const & current_token : tokens_scoped_increment_filter(a_tokens, &token::is_symbol)) {
             if (
                 auto const precedence = operator_token_precedence(current_token);
@@ -100,11 +101,14 @@ namespace rebar {
         // Find last operator token matching symbol.
         auto op_it = tokens_scoped_increment_find_last(a_tokens, equal_to(lowest_operator_symbol));
 
+        // Test if operator is a prefix operator.
         if (op_it == a_tokens.begin() || (*a_tokens.begin() == lowest_operator_symbol && lowest_operator_symbol != symbol::parenthesis_left)) {
+            // Find prefix operator entry.
             const auto prefix_operator = std::ranges::find_if(op_infos, [](auto const & op_info) {
                 return op_info.type == operator_type::unary && op_info.association == operator_association::right;
             });
 
+            // Test that prefix operator exists and complete tree.
             if (prefix_operator != op_infos.end()) {
                 expression_tree->set_op(prefix_operator->mapped_operation);
 
@@ -119,11 +123,14 @@ namespace rebar {
                 // TODO: Throw error.
             }
         }
+        // Test if operator is a postfix operator.
         else if (op_it == a_tokens.end() - 1) {
+            // Find postfix operator entry.
             const auto postfix_operator = std::ranges::find_if(op_infos, [](auto const & op_info) {
                 return op_info.type == operator_type::unary && op_info.association == operator_association::left;
             });
 
+            // Test that postfix operator exists and complete tree.
             if (postfix_operator != op_infos.end()) {
                 expression_tree->set_op(postfix_operator->mapped_operation);
 
@@ -138,6 +145,7 @@ namespace rebar {
                 // TODO: Throw error.
             }
         }
+        // Operator is a binary, trinary, etc. operator (non-prefix/postfix).
         else {
             auto const matched_op = *op_infos.begin();
 
@@ -166,6 +174,7 @@ namespace rebar {
                 );
             }
             else if (matched_op.type == operator_type::binary_enclose) {
+                // Find closing operator.
                 auto const end_op_it = tokens_scoped_increment_find(
                     std::span(op_it, a_tokens.end()),
                     equal_to(matched_op.secondary)
@@ -173,6 +182,7 @@ namespace rebar {
 
                 expression_tree->set_op(matched_op.mapped_operation);
 
+                // Select side of expression for base depending on association.
                 if (matched_op.association == operator_association::left) {
                     expression_tree->set_operand(
                         0,
@@ -214,6 +224,7 @@ namespace rebar {
                 auto expression_begin = a_tokens.begin();
                 auto expression_end   = a_tokens.begin();
 
+                // Add expressions to operator operands, delimited by operator.
                 do {
                     expression_end = tokens_scoped_increment_find(
                         std::span(expression_begin, a_tokens.end()),

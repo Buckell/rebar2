@@ -60,7 +60,7 @@ namespace rebar {
          * A map linking string plaintext to the internally stored
          * universal-reference string and a reference count.
          *
-         * <code><reference_count : std::size_t, internal_string : std::string></code>
+         * <code><reference_count : std::size_t, internal_string : std::unique_ptr<internal_string>></code>
          *
          * Strings are expected to be in UTF-8 encoding.
          */
