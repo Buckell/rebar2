@@ -14,7 +14,7 @@ namespace rebar {
     class string_engine;
 
     class string {
-        string_engine*   m_engine;
+        string_engine *  m_engine;
         string_reference m_container;
 
     public:
@@ -56,6 +56,15 @@ namespace rebar {
 
         [[nodiscard]]
         inline std::string_view view() const noexcept;
+
+        [[nodiscard]]
+        inline string_engine & parent_engine() const noexcept;
+
+        [[nodiscard]]
+        inline string_reference reference() const noexcept;
+
+    private:
+        friend class object;
     };
 
     // IO stream interoperability.
@@ -125,6 +134,14 @@ namespace rebar {
 
     std::string_view string::view() const noexcept {
         return m_container->string;
+    }
+
+    inline string_engine & string::parent_engine() const noexcept {
+        return *m_engine;
+    }
+
+    inline string_reference string::reference() const noexcept {
+        return m_container;
     }
 
 }

@@ -8,6 +8,7 @@
 #include <rebar/debug/flags.hpp>
 #include <rebar/debug/logging.hpp>
 #include <rebar/environment/environment.hpp>
+#include <rebar/environment/object.hpp>
 #include <rebar/environment/types.hpp>
 #include <rebar/lexical_analysis/escape_sequence.hpp>
 #include <rebar/lexical_analysis/lexical_analyzer.hpp>

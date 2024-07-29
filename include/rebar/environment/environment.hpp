@@ -5,6 +5,7 @@
 #ifndef ENVIRONMENT_HPP
 #define ENVIRONMENT_HPP
 
+#include <rebar/environment/object.hpp>
 #include <rebar/lexical_analysis/lexical_analyzer.hpp>
 #include <rebar/semantic_analysis/semantic_analyzer.hpp>
 #include <rebar/string/string_engine.hpp>
@@ -27,6 +28,10 @@ namespace rebar {
         using lexical_analyzer::process_string;
 
         using semantic_analyzer::perform_analysis;
+
+    private:
+        friend void rebar::reference_object(object const * a_object) noexcept;
+        friend void rebar::dereference_object(object const * a_object) noexcept;
     };
 
     // ###################################### INLINE DEFINITIONS ######################################
